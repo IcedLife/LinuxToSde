@@ -7,13 +7,18 @@ Some Changes
 @author: dnie
 '''
 import os
+import sys
+import argparse
+
+from argparse import ArgumentParser
+from argparse import RawDescriptionHelpFormatter
 from lxml import etree as ET
 from xml.etree.ElementTree import ElementTree, Element, SubElement, Comment, tostring
 from xml.etree import ElementTree
 from xml.dom import minidom
 
 class CommonLibGenerator:
-    def buildTree(self, imgLib):
+    def buildTree(self, imgLib, generatedXml):
         xmlFile = ET.Element("Resource")
         headerComment = ET.Comment("This is a generated xml file for Common Image library for String Testing")
         name = ET.SubElement(xmlFile, "Name")
@@ -62,12 +67,18 @@ class CommonLibGenerator:
         properties.append(sectionEnd)
 
         xmlString = ET.tostring(xmlFile, encoding="utf-8", xml_declaration=True, pretty_print=True)
-        f = open("xmlInclude/CommonImage.xml","w+")
+        f = open(generatedXml,"w+")
         f.write(xmlString)
         return xmlString
 
 if __name__ == '__main__':
     try:
-        CommonLibGenerator().buildTree(os.listdir("./CommonImage"))
+        parse = ArgumentParser(formatter_class=RawDescriptionHelpFormatter)
+        parse.add_argument(dest="sourceDir", metavar="Source")
+        parse.add_argument("-o","--output", dest="outputFile",type=argparse.FileType("w"))
+        
+        sourceDir = parse.sourceDir
+        outputFile = parse.outputFile
+        CommonLibGenerator().buildTree(sourceDir, outputFile)
     except OSError:
         print("Please Check Path, Make sure Running in testlibs/")
